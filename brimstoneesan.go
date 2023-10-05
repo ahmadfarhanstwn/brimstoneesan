@@ -3,9 +3,12 @@ package brimstoneesan
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
+	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 )
 
@@ -18,6 +21,13 @@ type Brimstoneesan struct {
 	ErrorLog *log.Logger
 	InfoLog  *log.Logger
 	RootPath string
+	Routes   *chi.Mux
+	config   config
+}
+
+type config struct {
+	port     string
+	renderer string
 }
 
 func (b *Brimstoneesan) New(rootPath string) error {
@@ -48,6 +58,12 @@ func (b *Brimstoneesan) New(rootPath string) error {
 	b.ErrorLog = errorLog
 	b.Debug, _ = strconv.ParseBool(os.Getenv("DEBUG"))
 	b.Version = version
+	b.RootPath = rootPath
+	b.Routes = b.routes().(*chi.Mux)
+	b.config = config{
+		port:     os.Getenv("PORT"),
+		renderer: os.Getenv("RENDERER"),
+	}
 
 	return nil
 }
@@ -61,6 +77,21 @@ func (b *Brimstoneesan) Init(p initPaths) error {
 		}
 	}
 	return nil
+}
+
+func (b *Brimstoneesan) ListenAndServer() {
+	srv := &http.Server{
+		Addr:         fmt.Sprintf(":%s", os.Getenv("PORT")),
+		ErrorLog:     b.ErrorLog,
+		Handler:      b.routes(),
+		IdleTimeout:  30 * time.Second,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 600 * time.Second,
+	}
+
+	b.InfoLog.Printf("Listening on port %s", os.Getenv("PORT"))
+	err := srv.ListenAndServe()
+	b.ErrorLog.Fatal(err)
 }
 
 func (b *Brimstoneesan) checkForEnv(path string) error {
