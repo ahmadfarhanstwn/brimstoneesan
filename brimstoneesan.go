@@ -86,7 +86,7 @@ func (b *Brimstoneesan) ListenAndServer() {
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%s", os.Getenv("PORT")),
 		ErrorLog:     b.ErrorLog,
-		Handler:      b.routes(),
+		Handler:      b.Routes,
 		IdleTimeout:  30 * time.Second,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 600 * time.Second,

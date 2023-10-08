@@ -1,7 +1,6 @@
 package brimstoneesan
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -16,10 +15,6 @@ func (b *Brimstoneesan) routes() http.Handler {
 		mux.Use(middleware.Logger)
 	}
 	mux.Use(middleware.Recoverer)
-
-	mux.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Welcome to brimstoneesan")
-	})
 
 	return mux
 }
