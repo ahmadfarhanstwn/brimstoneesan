@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/ahmadfarhanstwn/brimstoneesan/render"
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 )
@@ -22,6 +23,7 @@ type Brimstoneesan struct {
 	InfoLog  *log.Logger
 	RootPath string
 	Routes   *chi.Mux
+	Render   *render.Render
 	config   config
 }
 
@@ -64,6 +66,7 @@ func (b *Brimstoneesan) New(rootPath string) error {
 		port:     os.Getenv("PORT"),
 		renderer: os.Getenv("RENDERER"),
 	}
+	b.Render = b.CreateRenderer(b)
 
 	return nil
 }
@@ -111,4 +114,14 @@ func (b *Brimstoneesan) startLoggers() (*log.Logger, *log.Logger) {
 	errorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	return infoLog, errorLog
+}
+
+func (b *Brimstoneesan) CreateRenderer(brim *Brimstoneesan) *render.Render {
+	myRenderer := render.Render{
+		RootPath: brim.RootPath,
+		Renderer: brim.config.renderer,
+		Port:     brim.config.port,
+	}
+
+	return &myRenderer
 }
