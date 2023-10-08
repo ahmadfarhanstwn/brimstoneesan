@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/CloudyKit/jet/v6"
 	"github.com/ahmadfarhanstwn/brimstoneesan/render"
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
@@ -24,6 +25,7 @@ type Brimstoneesan struct {
 	RootPath string
 	Routes   *chi.Mux
 	Render   *render.Render
+	JetView  *jet.Set
 	config   config
 }
 
@@ -66,7 +68,15 @@ func (b *Brimstoneesan) New(rootPath string) error {
 		port:     os.Getenv("PORT"),
 		renderer: os.Getenv("RENDERER"),
 	}
-	b.Render = b.CreateRenderer(b)
+
+	views := jet.NewSet(
+		jet.NewOSFileSystemLoader(fmt.Sprintf("%s/views", rootPath)),
+		jet.InDevelopmentMode(),
+	)
+
+	b.JetView = views
+
+	b.CreateRenderer()
 
 	return nil
 }
@@ -116,12 +126,13 @@ func (b *Brimstoneesan) startLoggers() (*log.Logger, *log.Logger) {
 	return infoLog, errorLog
 }
 
-func (b *Brimstoneesan) CreateRenderer(brim *Brimstoneesan) *render.Render {
+func (b *Brimstoneesan) CreateRenderer() {
 	myRenderer := render.Render{
-		RootPath: brim.RootPath,
-		Renderer: brim.config.renderer,
-		Port:     brim.config.port,
+		RootPath: b.RootPath,
+		Renderer: b.config.renderer,
+		Port:     b.config.port,
+		JetViews: b.JetView,
 	}
 
-	return &myRenderer
+	b.Render = &myRenderer
 }
