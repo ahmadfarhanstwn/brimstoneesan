@@ -10,6 +10,8 @@ import (
 
 	"github.com/CloudyKit/jet/v6"
 	"github.com/ahmadfarhanstwn/brimstoneesan/render"
+	"github.com/ahmadfarhanstwn/brimstoneesan/session"
+	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 )
@@ -25,13 +27,16 @@ type Brimstoneesan struct {
 	RootPath string
 	Routes   *chi.Mux
 	Render   *render.Render
+	Session  *scs.SessionManager
 	JetView  *jet.Set
 	config   config
 }
 
 type config struct {
-	port     string
-	renderer string
+	port        string
+	renderer    string
+	cookie      cookieConfig
+	sessionType string
 }
 
 func (b *Brimstoneesan) New(rootPath string) error {
@@ -67,7 +72,26 @@ func (b *Brimstoneesan) New(rootPath string) error {
 	b.config = config{
 		port:     os.Getenv("PORT"),
 		renderer: os.Getenv("RENDERER"),
+		cookie: cookieConfig{
+			name:     os.Getenv("COOKIE NAME"),
+			lifetime: os.Getenv("COOKIW_LIFETIME"),
+			persist:  os.Getenv("COOKIE_PERSIST"),
+			secure:   os.Getenv("COOKIE_SECURE"),
+			domain:   os.Getenv("COOKIE_DOMAIN"),
+		},
+		sessionType: os.Getenv("SESSION_TYPE"),
 	}
+
+	//CREATE SESSION
+	sess := session.Session{
+		CookieLifetime: b.config.cookie.lifetime,
+		CookiePersist:  b.config.cookie.persist,
+		CookieName:     b.config.cookie.name,
+		SessionType:    b.config.sessionType,
+		CookieDomain:   b.config.cookie.domain,
+	}
+
+	b.Session = sess.InitSession()
 
 	views := jet.NewSet(
 		jet.NewOSFileSystemLoader(fmt.Sprintf("%s/views", rootPath)),

@@ -11,10 +11,11 @@ func (b *Brimstoneesan) routes() http.Handler {
 	mux := chi.NewRouter()
 	mux.Use(middleware.RequestID)
 	mux.Use(middleware.RealIP)
+	mux.Use(middleware.Logger)
 	if b.Debug {
-		mux.Use(middleware.Logger)
 	}
 	mux.Use(middleware.Recoverer)
+	mux.Use(b.SessionLoad)
 
 	return mux
 }
