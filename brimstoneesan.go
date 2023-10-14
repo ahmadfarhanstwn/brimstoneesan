@@ -74,7 +74,7 @@ func (b *Brimstoneesan) New(rootPath string) error {
 		renderer: os.Getenv("RENDERER"),
 		cookie: cookieConfig{
 			name:     os.Getenv("COOKIE NAME"),
-			lifetime: os.Getenv("COOKIW_LIFETIME"),
+			lifetime: os.Getenv("COOKIE_LIFETIME"),
 			persist:  os.Getenv("COOKIE_PERSIST"),
 			secure:   os.Getenv("COOKIE_SECURE"),
 			domain:   os.Getenv("COOKIE_DOMAIN"),
