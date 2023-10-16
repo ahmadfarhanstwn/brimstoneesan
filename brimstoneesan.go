@@ -30,13 +30,15 @@ type Brimstoneesan struct {
 	Session  *scs.SessionManager
 	JetView  *jet.Set
 	config   config
+	Database Database
 }
 
 type config struct {
-	port        string
-	renderer    string
-	cookie      cookieConfig
-	sessionType string
+	port           string
+	renderer       string
+	cookie         cookieConfig
+	sessionType    string
+	databaseConfig databaseConfig
 }
 
 func (b *Brimstoneesan) New(rootPath string) error {
@@ -63,6 +65,20 @@ func (b *Brimstoneesan) New(rootPath string) error {
 
 	//start logger
 	infoLog, errorLog := b.startLoggers()
+
+	//connect to db
+	if os.Getenv("DATABASE_TYPE") != "" {
+		db, err := b.OpenDb(os.Getenv("DATABASE_TYPE"), b.BuildDsn())
+		if err != nil {
+			errorLog.Println(err)
+			os.Exit(1)
+		}
+		b.Database = Database{
+			DatabaseType: os.Getenv("DATABASE_TYPE"),
+			Pool:         db,
+		}
+	}
+
 	b.InfoLog = infoLog
 	b.ErrorLog = errorLog
 	b.Debug, _ = strconv.ParseBool(os.Getenv("DEBUG"))
@@ -159,4 +175,26 @@ func (b *Brimstoneesan) CreateRenderer() {
 	}
 
 	b.Render = &myRenderer
+}
+
+func (b *Brimstoneesan) BuildDsn() string {
+	var dsn string
+
+	switch os.Getenv("DATABASE_TYPE") {
+	case "postgres", "postgresql":
+		dsn = fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=%s timezone=UTC connect_timeout=5",
+			os.Getenv("DATABASE_HOST"),
+			os.Getenv("DATABASE_PORT"),
+			os.Getenv("DATABASE_USER"),
+			os.Getenv("DATABASE_NAME"),
+			os.Getenv("DATABASE_SSL_MODE"),
+		)
+
+		if os.Getenv("DATABASE_PASS") != "" {
+			dsn = fmt.Sprintf("%s password=%s", dsn, os.Getenv("DATABASE_PASS"))
+		}
+	default:
+	}
+
+	return dsn
 }
