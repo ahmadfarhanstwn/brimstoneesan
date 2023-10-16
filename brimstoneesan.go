@@ -96,6 +96,10 @@ func (b *Brimstoneesan) New(rootPath string) error {
 			domain:   os.Getenv("COOKIE_DOMAIN"),
 		},
 		sessionType: os.Getenv("SESSION_TYPE"),
+		databaseConfig: databaseConfig{
+			databaseType: os.Getenv("DATABASE_TYPE"),
+			dsn:          b.BuildDsn(),
+		},
 	}
 
 	//CREATE SESSION
@@ -141,6 +145,7 @@ func (b *Brimstoneesan) ListenAndServer() {
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 600 * time.Second,
 	}
+	defer b.Database.Pool.Close()
 
 	b.InfoLog.Printf("Listening on port %s", os.Getenv("PORT"))
 	err := srv.ListenAndServe()
