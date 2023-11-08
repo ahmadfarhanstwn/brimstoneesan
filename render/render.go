@@ -34,6 +34,17 @@ type TemplateData struct {
 	Secure          bool
 }
 
+func (rend *Render) defaultData(td *TemplateData, r *http.Request) *TemplateData {
+	td.Secure = rend.Secure
+	td.ServerName = rend.ServerName
+	td.Port = rend.Port
+
+	if rend.Session.Exists(r.Context(), "userId") {
+		td.IsAuthenticated = true
+	}
+	return td
+}
+
 func (rend *Render) Page(w http.ResponseWriter, r *http.Request, view string, variables, data interface{}) error {
 	switch strings.ToLower(rend.Renderer) {
 	case "go":
@@ -78,6 +89,8 @@ func (rend *Render) JetPage(w http.ResponseWriter, r *http.Request, view string,
 	if data != nil {
 		templateData = data.(*TemplateData)
 	}
+
+	templateData = rend.defaultData(templateData, r)
 
 	template, err := rend.JetViews.GetTemplate(fmt.Sprintf("%s.jet", view))
 	if err != nil {
