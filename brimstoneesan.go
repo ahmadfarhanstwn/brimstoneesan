@@ -177,6 +177,7 @@ func (b *Brimstoneesan) CreateRenderer() {
 		Renderer: b.config.renderer,
 		Port:     b.config.port,
 		JetViews: b.JetView,
+		Session:  b.Session,
 	}
 
 	b.Render = &myRenderer

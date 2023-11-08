@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/CloudyKit/jet/v6"
+	"github.com/alexedwards/scs/v2"
 )
 
 type Render struct {
@@ -18,6 +19,7 @@ type Render struct {
 	Port       string
 	JetViews   *jet.Set
 	ServerName string
+	Session    *scs.SessionManager
 }
 
 type TemplateData struct {
